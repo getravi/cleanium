@@ -16,10 +16,15 @@ public enum Glob {
 public struct RuleEngine {
     public let bundled: [Rule]
     public let learned: [LearnedRule]
+    /// When set, overrides the stalenessDays of download-category rules that define one.
+    /// Wired from `settings.stalenessDays` so the Settings stepper actually takes effect.
+    public let downloadStalenessOverrideDays: Int?
 
-    public init(bundled: [Rule], learned: [LearnedRule]) {
+    public init(bundled: [Rule], learned: [LearnedRule],
+                downloadStalenessOverrideDays: Int? = nil) {
         self.bundled = bundled
         self.learned = learned
+        self.downloadStalenessOverrideDays = downloadStalenessOverrideDays
     }
 
     public static func loadBundledRules() throws -> [Rule] {
@@ -51,7 +56,9 @@ public struct RuleEngine {
 
     private func ruleApplies(_ rule: Rule, path: String, modifiedAt: Date, now: Date) -> Bool {
         guard Glob.matches(pattern: rule.pattern, path: path) else { return false }
-        if let days = rule.stalenessDays {
+        if let ruleDays = rule.stalenessDays {
+            // Only download rules with an explicit stalenessDays honor the user override.
+            let days = (rule.category == .download ? downloadStalenessOverrideDays : nil) ?? ruleDays
             let age = now.timeIntervalSince(modifiedAt)
             guard age >= Double(days) * 86400 else { return false }
         }
