@@ -46,6 +46,30 @@ public struct SuggestedRule: Codable, Equatable, Sendable {
         self.pattern = pattern
         self.kind = kind
     }
+
+    /// Guards against blindly trusting LLM-suggested rules before nominating them.
+    /// A valid suggestion must actually relate to the path the user just deleted and
+    /// must not be trivially broad (a bare `*`/`**`/`?` or a pattern whose expanded
+    /// form has fewer than 2 path components of specificity, e.g. `~/Library/*`).
+    /// For `.exactPath` the tilde-expanded pattern must equal the origin path exactly.
+    public func isValid(forOriginPath originPath: String) -> Bool {
+        let expanded = (pattern as NSString).expandingTildeInPath
+        if kind == .exactPath {
+            return expanded == originPath
+        }
+        // Reject patterns that are purely wildcard characters.
+        let stripped = pattern.filter { !"*?/~".contains($0) }
+        guard !stripped.isEmpty else { return false }
+        // Count literal components of the raw pattern (a leading `~` carries no
+        // specificity of its own). Require ≥2 so a broad `~/Library/*` — one literal
+        // component, "Library" — can't be learned, while `~/Library/Caches/foo*` can.
+        let literalComponents = pattern
+            .split(separator: "/")
+            .filter { comp in comp != "~" && !comp.contains(where: { "*?".contains($0) }) }
+        guard literalComponents.count >= 2 else { return false }
+        // The suggested glob must match the path it was derived from.
+        return Glob.matches(pattern: pattern, path: originPath)
+    }
 }
 
 public struct LearnedRule: Codable, Identifiable, Equatable, Sendable {

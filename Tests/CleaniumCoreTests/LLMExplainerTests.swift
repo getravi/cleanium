@@ -74,6 +74,34 @@ final class LLMExplainerTests: XCTestCase {
         XCTAssertEqual(result?.category, .appLeftover)
     }
 
+    // Fix 7: nominated rules must relate to the deleted path and not be trivially broad.
+    func testSuggestedRuleValidExactPathPasses() {
+        let origin = NSHomeDirectory() + "/Library/Application Support/foo/voice"
+        let s = SuggestedRule(pattern: "~/Library/Application Support/foo/voice", kind: .exactPath)
+        XCTAssertTrue(s.isValid(forOriginPath: origin))
+    }
+
+    func testSuggestedRuleExactPathMismatchFails() {
+        let origin = NSHomeDirectory() + "/Library/Application Support/foo/voice"
+        let s = SuggestedRule(pattern: "~/Library/Application Support/bar/other", kind: .exactPath)
+        XCTAssertFalse(s.isValid(forOriginPath: origin))
+    }
+
+    func testSuggestedRuleGlobMatchingOriginPasses() {
+        let origin = NSHomeDirectory() + "/Library/Caches/acme-widgets-9.9"
+        let s = SuggestedRule(pattern: "~/Library/Caches/acme-widgets*", kind: .glob)
+        XCTAssertTrue(s.isValid(forOriginPath: origin))
+    }
+
+    func testSuggestedRuleBareWildcardRejected() {
+        let origin = NSHomeDirectory() + "/Library/Caches/anything"
+        XCTAssertFalse(SuggestedRule(pattern: "*", kind: .glob).isValid(forOriginPath: origin))
+        XCTAssertFalse(SuggestedRule(pattern: "**", kind: .glob).isValid(forOriginPath: origin))
+        // Too broad: only one literal component even though it matches the origin.
+        XCTAssertFalse(SuggestedRule(pattern: "~/Library/*", kind: .glob)
+            .isValid(forOriginPath: origin))
+    }
+
     func testDetectInstalledFindsBinariesInSearchPath() throws {
         let dir = FileManager.default.temporaryDirectory
             .appendingPathComponent("cleanium-bin-\(UUID().uuidString)")
