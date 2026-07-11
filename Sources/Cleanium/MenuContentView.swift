@@ -81,7 +81,11 @@ struct MenuContentView: View {
                     ForEach(items) { CandidateRow(candidate: $0) }
                 } header: {
                     HStack {
-                        Text("\(risk.badge) — \(risk.label)")
+                        Text(risk.badge)
+                            .font(.caption).bold().foregroundStyle(.white)
+                            .padding(.horizontal, 5).padding(.vertical, 1)
+                            .background(risk.color, in: Capsule())
+                        Text(risk.label).foregroundStyle(risk.color)
                         Spacer()
                         Button("All") {
                             state.selection.formUnion(items.map(\.id))
@@ -196,14 +200,40 @@ struct CandidateRow: View {
                     Image(systemName: expanded ? "chevron.up" : "chevron.down")
                 }.buttonStyle(.plain)
             }
+            // Always-visible one-line plain-English explanation.
+            Text(candidate.classification.context)
+                .font(.caption).foregroundStyle(.secondary)
+                .lineLimit(expanded ? nil : 1)
+                .padding(.leading, 24)
             if expanded {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(candidate.path).font(.caption).textSelection(.enabled)
-                    Text(candidate.classification.context).font(.caption)
-                    Text("Restore: \(candidate.classification.restoreNote)").font(.caption)
-                    Text("Source: \(candidate.classification.provenance.label)")
+                VStack(alignment: .leading, spacing: 5) {
+                    Label {
+                        Text(candidate.classification.risk.label)
+                            .foregroundStyle(candidate.classification.risk.color)
+                    } icon: {
+                        Image(systemName: "exclamationmark.shield")
+                            .foregroundStyle(candidate.classification.risk.color)
+                    }
+                    Label {
+                        Text("If you need it back: \(candidate.classification.restoreNote)")
+                    } icon: {
+                        Image(systemName: "arrow.uturn.backward.circle")
+                    }
+                    Label {
+                        Text("Identified by \(candidate.classification.provenance.label)")
+                            .foregroundStyle(.secondary)
+                    } icon: {
+                        Image(systemName: "magnifyingglass.circle")
+                            .foregroundStyle(.secondary)
+                    }
+                    Text(candidate.path)
                         .font(.caption2).foregroundStyle(.secondary)
+                        .textSelection(.enabled)
                 }
+                .font(.callout)
+                .padding(8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 6))
                 .padding(.leading, 24)
             }
         }

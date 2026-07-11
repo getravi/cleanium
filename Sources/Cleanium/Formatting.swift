@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import CleaniumCore
 
 enum Fmt {
@@ -10,11 +11,11 @@ enum Fmt {
 extension Risk {
     var label: String {
         switch self {
-        case .safe: return "Safe — regenerated automatically"
-        case .rebuildable: return "Rebuildable — one command restores"
-        case .redownload: return "Re-downloadable"
-        case .userData: return "User data — verify first"
-        case .unknown: return "Unknown"
+        case .safe: return "Safe to delete — comes back by itself"
+        case .rebuildable: return "Safe to delete — one command rebuilds it"
+        case .redownload: return "Deletable — can be downloaded again"
+        case .userData: return "Careful — your own files, check first"
+        case .unknown: return "Unknown — check before deleting"
         }
     }
     var badge: String {
@@ -26,13 +27,22 @@ extension Risk {
         case .unknown: return "?"
         }
     }
+    var color: Color {
+        switch self {
+        case .safe: return .green
+        case .rebuildable: return .teal
+        case .redownload: return .blue
+        case .userData: return .red
+        case .unknown: return .orange
+        }
+    }
 }
 
 extension Provenance {
     var label: String {
         switch self {
-        case .bundled: return "built-in rule"
-        case .learned: return "learned rule"
+        case .bundled: return "Cleanium's built-in knowledge"
+        case .learned: return "a rule you approved earlier"
         case .llm(let p): return "AI (\(p))"
         }
     }
