@@ -47,6 +47,33 @@ final class LLMExplainerTests: XCTestCase {
         XCTAssertEqual(LLMProvider.gemini.arguments(prompt: "hi"), ["-p", "hi"])
     }
 
+    func testExplainDrainsLargeStdoutWithoutDeadlock() throws {
+        let dir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("cleanium-llm-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let script = dir.appendingPathComponent("fake-claude")
+
+        // Filler exceeds the ~64KB pipe buffer; under the old (post-exit) read this
+        // would deadlock the child on a full pipe and cause explain() to time out.
+        let filler = String(repeating: "This folder likely contains build artifacts. ", count: 4000)
+        let scriptContents = """
+        #!/bin/sh
+        printf '%s' '\(filler)'
+        cat <<'JSON'
+        \(goodJSON)
+        JSON
+        """
+        try scriptContents.write(to: script, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: script.path)
+
+        let explainer = LLMExplainer(provider: .claude, binaryPath: script.path, timeout: 10)
+        let result = explainer.explain(path: "/tmp/whatever", sizeBytes: 1_000_000)
+
+        XCTAssertNotNil(result)
+        XCTAssertEqual(result?.category, .appLeftover)
+    }
+
     func testDetectInstalledFindsBinariesInSearchPath() throws {
         let dir = FileManager.default.temporaryDirectory
             .appendingPathComponent("cleanium-bin-\(UUID().uuidString)")

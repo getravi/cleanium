@@ -95,8 +95,17 @@ public final class LLMExplainer {
         process.arguments = provider.arguments(prompt: Self.prompt(path: path, sizeBytes: sizeBytes))
         let pipe = Pipe()
         process.standardOutput = pipe
-        process.standardError = Pipe()
+        process.standardError = FileHandle.nullDevice
         do { try process.run() } catch { return nil }
+
+        // Drain stdout concurrently so the CLI never blocks on a full pipe buffer
+        // while we're polling isRunning below.
+        var stdoutData = Data()
+        let drainDone = DispatchSemaphore(value: 0)
+        DispatchQueue.global(qos: .utility).async {
+            stdoutData = pipe.fileHandleForReading.readDataToEndOfFile()
+            drainDone.signal()
+        }
 
         let deadline = Date(timeIntervalSinceNow: timeout)
         while process.isRunning && Date() < deadline {
@@ -107,7 +116,7 @@ public final class LLMExplainer {
             return nil
         }
         guard process.terminationStatus == 0 else { return nil }
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        return Self.parse(String(data: data, encoding: .utf8) ?? "")
+        drainDone.wait()
+        return Self.parse(String(data: stdoutData, encoding: .utf8) ?? "")
     }
 }
