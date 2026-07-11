@@ -23,9 +23,11 @@ Selected items move to the Trash.
   (Claude Pro/Max, ChatGPT Plus, Gemini). No API keys, no HTTP SDK.
   Provider switchable in Settings; app auto-detects installed CLIs.
 - Learning: when the user deletes an LLM-classified item, the LLM's
-  suggested rule is persisted as a learned rule so future scans classify
-  it deterministically. Deletion is the confirmation signal — no extra
-  prompt. Non-deleted LLM classifications are session-only.
+  suggested rule becomes a learning candidate. The app asks for consent
+  before persisting — every run, no "always allow" — because the user
+  may choose not to follow previous patterns this time. Declined rules
+  are discarded for that session. Non-deleted LLM classifications are
+  session-only.
 - Scan scope: curated defaults, user-editable in Settings.
 
 ## Architecture
@@ -84,8 +86,11 @@ Modules (single package, separate source directories, one library target
 ### 4. LearnedRuleStore (CleaniumCore)
 
 - Persists learned rules; loaded by RuleEngine at scan start.
-- A learned rule is written only when the user deletes an item whose
-  classification came from the LLM in the current session.
+- Learning flow: after a delete batch completes, items whose
+  classification came from the LLM in the current session appear in a
+  "Save rules for next time?" sheet — one row per rule, checkboxes
+  default-checked, Save / Skip buttons. Nothing persists without this
+  explicit consent, on every run. Skipped rules are discarded.
 - Exact-path rules by default; the LLM's broader glob suggestion is
   stored but marked `unverified` and shown as such in results.
 - CRUD surface for the Settings pane (list, edit, delete).
@@ -129,7 +134,7 @@ Modules (single package, separate source directories, one library target
 Scan → Scanner streams candidates → RuleEngine (bundled + learned) →
 matched: classified candidate; unmatched & big & LLM on: LLMExplainer →
 results list → user selects → confirm → TrashService → deletion of
-LLM-classified item triggers LearnedRuleStore.save → post-delete size
+LLM-classified items triggers consent sheet → LearnedRuleStore.save → post-delete size
 refresh.
 
 ## Error Handling
