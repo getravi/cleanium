@@ -215,10 +215,20 @@ struct MenuContentView: View {
 }
 
 /// Behind-window vibrancy for the popover — the translucent "skin" a plain
-/// MenuBarExtra window doesn't get by default.
+/// MenuBarExtra window doesn't get by default. The hosting window is opaque,
+/// which leaves a behind-window blur nothing to sample, so this view also
+/// clears the window's backing whenever it lands in one.
+private final class TransparentWindowEffectView: NSVisualEffectView {
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        window?.isOpaque = false
+        window?.backgroundColor = .clear
+    }
+}
+
 struct VisualEffectBackground: NSViewRepresentable {
     func makeNSView(context: Context) -> NSVisualEffectView {
-        let view = NSVisualEffectView()
+        let view = TransparentWindowEffectView()
         view.material = .popover
         view.blendingMode = .behindWindow
         view.state = .active
