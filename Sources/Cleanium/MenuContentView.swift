@@ -73,10 +73,11 @@ struct MenuContentView: View {
                     .foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
             }
             if state.llmCalls > 0 {
-                Text("AI this scan: \(state.llmCalls) call\(state.llmCalls == 1 ? "" : "s")"
-                     + " · \(state.llmTokens.formatted()) tokens"
-                     + (state.llmTokensIncomplete ? " (some calls did not report usage)" : ""))
+                Text(aiUsageText)
                     .font(.caption2).foregroundStyle(.secondary)
+                    .help("Cached input tokens are served from the provider's prompt cache "
+                          + "at ~10% of the price of fresh input. Folders are classified in "
+                          + "batches to pay the CLI's fixed prompt overhead once per batch.")
             }
             if let err = state.ruleLoadError {
                 Text(err).font(.caption).foregroundStyle(.red)
@@ -85,6 +86,18 @@ struct MenuContentView: View {
                 Text(err).font(.caption).foregroundStyle(.red)
             }
         }
+    }
+
+    private var aiUsageText: String {
+        let calls = "AI this scan: \(state.llmCalls) call" + (state.llmCalls == 1 ? "" : "s")
+        var text = calls
+        text += " · in " + state.llmInputTokens.formatted()
+        text += " (+" + state.llmCachedTokens.formatted() + " cached)"
+        text += " · out " + state.llmOutputTokens.formatted()
+        if state.llmTokensIncomplete {
+            text += " · some calls did not report usage"
+        }
+        return text
     }
 
     private var diskGauge: some View {

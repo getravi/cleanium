@@ -53,9 +53,12 @@ final class AppState: ObservableObject {
     @Published var ruleLoadError: String?
     /// A learned-rule save/delete the user asked for failed to persist.
     @Published var storeError: String?
-    /// AI usage for the current/most recent scan.
+    /// AI usage for the current/most recent scan. Input and cache reads are
+    /// tracked separately — cached tokens cost ~10% of fresh input.
     @Published var llmCalls = 0
-    @Published var llmTokens = 0
+    @Published var llmInputTokens = 0
+    @Published var llmCachedTokens = 0
+    @Published var llmOutputTokens = 0
     /// True when at least one AI call this scan didn't report usage (codex/gemini).
     @Published var llmTokensIncomplete = false
 
@@ -107,7 +110,9 @@ final class AppState: ObservableObject {
         outcomes = []
         llmClassified = [:]
         llmCalls = 0
-        llmTokens = 0
+        llmInputTokens = 0
+        llmCachedTokens = 0
+        llmOutputTokens = 0
         llmTokensIncomplete = false
 
         let learned = learnedStore.load()
@@ -165,37 +170,50 @@ final class AppState: ObservableObject {
             if llmEnabled,
                let (detected, binary) = LLMProvider.detectInstalled()
                    .first(where: { $0.0 == provider }) {
-                let explainer = LLMExplainer(provider: detected, binaryPath: binary)
-                for dir in result.unknownDirs {
+                // Each CLI invocation carries tens of thousands of fixed input
+                // tokens (the CLI's own system prompt), so folders are classified
+                // in batches — one call per chunk instead of one per folder.
+                let explainer = LLMExplainer(provider: detected, binaryPath: binary,
+                                             timeout: 120)
+                let chunkSize = 20
+                let chunks = stride(from: 0, to: result.unknownDirs.count, by: chunkSize).map {
+                    Array(result.unknownDirs[$0..<min($0 + chunkSize, result.unknownDirs.count)])
+                }
+                for chunk in chunks {
                     while pauseF.isSet && !flag.isSet {
                         try? await Task.sleep(nanoseconds: 50_000_000)
                     }
                     guard !isCancelled() else { break }
                     Task { @MainActor [weak self] in
                         guard !flag.isSet else { return }
-                        self?.progressText = "Asking \(detected.rawValue) about \(dir.path)"
+                        self?.progressText =
+                            "Asking \(detected.rawValue) about \(chunk.count) folder\(chunk.count == 1 ? "" : "s")…"
                     }
-                    guard let reply = explainer.explain(path: dir.path, sizeBytes: dir.sizeBytes)
-                    else { continue }
-                    let e = reply.explanation
-                    let usage = reply.usage
+                    guard let batch = explainer.explainBatch(
+                        dirs: chunk.map { ($0.path, $0.sizeBytes) }) else { continue }
+                    let usage = batch.usage
                     Task { @MainActor [weak self] in
                         guard !flag.isSet, let self else { return }
                         self.llmCalls += 1
                         if let usage {
-                            self.llmTokens += usage.totalTokens
+                            self.llmInputTokens += usage.inputTokens
+                            self.llmCachedTokens += usage.cacheReadTokens
+                            self.llmOutputTokens += usage.outputTokens
                         } else {
                             self.llmTokensIncomplete = true
                         }
                     }
-                    llmMap[dir.path] = e
-                    extra.append(Candidate(
-                        path: dir.path, sizeBytes: dir.sizeBytes, modifiedAt: dir.modifiedAt,
-                        classification: Classification(
-                            category: e.category, risk: e.risk, context: e.context,
-                            restoreNote: e.restoreNote,
-                            provenance: .llm(provider: detected.rawValue),
-                            suggestedRule: e.suggestedRule)))
+                    for dir in chunk {
+                        guard let e = batch.explanations[dir.path] else { continue }
+                        llmMap[dir.path] = e
+                        extra.append(Candidate(
+                            path: dir.path, sizeBytes: dir.sizeBytes, modifiedAt: dir.modifiedAt,
+                            classification: Classification(
+                                category: e.category, risk: e.risk, context: e.context,
+                                restoreNote: e.restoreNote,
+                                provenance: .llm(provider: detected.rawValue),
+                                suggestedRule: e.suggestedRule)))
+                    }
                 }
             }
 

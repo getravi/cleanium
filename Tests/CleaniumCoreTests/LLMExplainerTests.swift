@@ -51,7 +51,8 @@ final class LLMExplainerTests: XCTestCase {
         """
         let reply = try XCTUnwrap(LLMExplainer.extract(envelope, provider: .claude))
         XCTAssertEqual(reply.explanation.category, .appLeftover)
-        XCTAssertEqual(reply.usage?.inputTokens, 150)  // input + both cache buckets
+        XCTAssertEqual(reply.usage?.inputTokens, 120)      // fresh input + cache creation
+        XCTAssertEqual(reply.usage?.cacheReadTokens, 30)   // served from prompt cache
         XCTAssertEqual(reply.usage?.outputTokens, 40)
     }
 
@@ -63,6 +64,46 @@ final class LLMExplainerTests: XCTestCase {
         XCTAssertNil(reply.usage)
         let gemini = try XCTUnwrap(LLMExplainer.extract(goodJSON, provider: .gemini))
         XCTAssertNil(gemini.usage)
+    }
+
+    func testBatchPromptListsAllFoldersAndArraySchema() {
+        let p = LLMExplainer.promptBatch(dirs: [("/a/one", 1_000_000), ("/b/two", 2_000_000)])
+        XCTAssertTrue(p.contains("/a/one"))
+        XCTAssertTrue(p.contains("/b/two"))
+        XCTAssertTrue(p.contains("JSON array"))
+        XCTAssertTrue(p.contains("\"path\""))
+    }
+
+    func testParseBatchMapsByPathAndSkipsBadItems() throws {
+        let batch = """
+        Here you go:
+        ```json
+        [{"path": "/a/one", "category": "cache", "risk": "safe",
+          "context": "c1", "restore_note": "r1"},
+         {"path": "/b/two", "category": "NOT_A_CATEGORY", "risk": "safe",
+          "context": "c2", "restore_note": "r2"},
+         {"path": "/c/three", "category": "llmModel", "risk": "redownload",
+          "context": "c3", "restore_note": "r3",
+          "suggested_rule": {"pattern": "/c/three", "kind": "exactPath"}}]
+        ```
+        """
+        let map = try XCTUnwrap(LLMExplainer.parseBatch(batch))
+        XCTAssertEqual(map.count, 2, "malformed item must be skipped, not sink the batch")
+        XCTAssertEqual(map["/a/one"]?.category, .cache)
+        XCTAssertEqual(map["/c/three"]?.suggestedRule?.kind, .exactPath)
+    }
+
+    func testExtractBatchReadsClaudeEnvelopeUsage() throws {
+        let inner = #"[{\"path\": \"/a/one\", \"category\": \"cache\", \"risk\": \"safe\", \"context\": \"c\", \"restore_note\": \"r\"}]"#
+        let envelope = """
+        {"type": "result", "result": "\(inner)",
+         "usage": {"input_tokens": 10, "cache_read_input_tokens": 5, "output_tokens": 7}}
+        """
+        let reply = try XCTUnwrap(LLMExplainer.extractBatch(envelope, provider: .claude))
+        XCTAssertEqual(reply.explanations["/a/one"]?.category, .cache)
+        XCTAssertEqual(reply.usage?.inputTokens, 10)
+        XCTAssertEqual(reply.usage?.cacheReadTokens, 5)
+        XCTAssertEqual(reply.usage?.outputTokens, 7)
     }
 
     func testTimeoutKillsProcessThatIgnoresSIGTERM() throws {
