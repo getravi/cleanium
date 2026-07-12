@@ -18,7 +18,8 @@ struct MenuContentView: View {
             }
         }
         .frame(width: 460, height: 560, alignment: .top)
-        .background(VisualEffectBackground().ignoresSafeArea())
+        // No explicit background: the hosting NSPopover supplies the translucent
+        // material, and clear SwiftUI content lets it show through.
     }
 
     private var mainContent: some View {
