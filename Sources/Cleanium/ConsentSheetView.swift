@@ -40,7 +40,6 @@ struct ConsentSheetView: View {
             }
         }
         .padding(16)
-        .frame(width: 440, height: 320)
         .onAppear { approved = Set(state.pendingLearnable.map(\.id)) }
     }
 }

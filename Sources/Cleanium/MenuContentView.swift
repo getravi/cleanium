@@ -5,7 +5,22 @@ struct MenuContentView: View {
     @EnvironmentObject var state: AppState
     @State private var confirmDelete = false
 
+    // The consent view renders inline instead of via .sheet: window-based
+    // presentations from a MenuBarExtra popover shift key focus, which breaks
+    // their hit-testing and can dismiss the popover (same issue as the old
+    // delete confirmationDialog).
     var body: some View {
+        Group {
+            if state.showConsentSheet {
+                ConsentSheetView()
+            } else {
+                mainContent
+            }
+        }
+        .frame(width: 460, height: 560, alignment: .top)
+    }
+
+    private var mainContent: some View {
         VStack(alignment: .leading, spacing: 8) {
             header
             Divider()
@@ -21,10 +36,6 @@ struct MenuContentView: View {
             footer
         }
         .padding(12)
-        .frame(width: 460, height: 560, alignment: .top)
-        .sheet(isPresented: $state.showConsentSheet) {
-            ConsentSheetView().environmentObject(state)
-        }
     }
 
     private var header: some View {
@@ -206,6 +217,12 @@ struct CandidateRow: View {
                     Image(systemName: expanded ? "chevron.up" : "chevron.down")
                 }.buttonStyle(.plain)
             }
+            // Always-visible path — the fastest way to scan the list.
+            Text((candidate.path as NSString).abbreviatingWithTildeInPath)
+                .font(.system(.caption, design: .monospaced))
+                .lineLimit(1).truncationMode(.middle)
+                .textSelection(.enabled)
+                .padding(.leading, 24)
             // Always-visible one-line plain-English explanation.
             Text(candidate.classification.context)
                 .font(.caption).foregroundStyle(.secondary)
