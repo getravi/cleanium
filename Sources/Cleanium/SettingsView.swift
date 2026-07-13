@@ -160,37 +160,88 @@ private struct AITab: View {
     @EnvironmentObject var state: AppState
 
     var body: some View {
-        Form {
-            let detected = Dictionary(uniqueKeysWithValues: LLMProvider.detectInstalled())
-            Toggle("Explain unknown folders with AI",
-                   isOn: Binding(get: { state.settings.llmEnabled },
-                                 set: { state.settings.llmEnabled = $0 }))
-                .toggleStyle(SwitchToggleStyle(tint: .green))
-                .disabled(detected.isEmpty)
-            if detected.isEmpty {
-                Text("No supported CLI found. Install claude, codex, or gemini.")
-                    .font(.caption).foregroundStyle(.secondary)
+        let detected = Dictionary(uniqueKeysWithValues: LLMProvider.detectInstalled())
+        let selected = state.settings.llmProvider
+        let selectedMissing = detected[selected] == nil
+        return Form {
+            Section {
+                Toggle("Explain unknown folders with AI",
+                       isOn: Binding(get: { state.settings.llmEnabled },
+                                     set: { state.settings.llmEnabled = $0 }))
+                    .toggleStyle(SwitchToggleStyle(tint: .green))
+                    .disabled(detected.isEmpty)
+                Picker("Provider", selection: Binding(get: { state.settings.llmProvider },
+                                                       set: { state.settings.llmProvider = $0 })) {
+                    ForEach(LLMProvider.allCases, id: \.self) { provider in
+                        Text(provider.displayName
+                             + (detected[provider] != nil ? " — installed" : " — not installed"))
+                            .tag(provider)
+                    }
+                }
+                if selectedMissing {
+                    calloutMissing(selected)
+                }
+                Stepper("Ask about folders over: \(state.settings.llmMinSizeMB) MB",
+                        value: Binding(get: { state.settings.llmMinSizeMB },
+                                       set: { state.settings.llmMinSizeMB = $0 }),
+                        in: 100...5000, step: 100)
             }
-            Picker("Provider", selection: Binding(get: { state.settings.llmProvider },
-                                                   set: { state.settings.llmProvider = $0 })) {
+
+            Section("Setting up a provider") {
+                Text("Cleanium runs your own installed CLI — no API keys, and it uses the "
+                     + "subscription you already pay for. Install one, sign in once by running "
+                     + "it in Terminal, then pick it above.")
+                    .font(.caption).foregroundStyle(.secondary)
                 ForEach(LLMProvider.allCases, id: \.self) { provider in
-                    Text(provider.displayName
-                         + (detected[provider].map { " — \($0)" } ?? " — not installed"))
-                        .tag(provider)
+                    providerSetupRow(provider, installed: detected[provider] != nil)
+                }
+                Text("Cleanium looks for the CLI in /opt/homebrew/bin, /usr/local/bin, "
+                     + "~/.local/bin, ~/bin, and ~/.bun/bin. If yours lives elsewhere, symlink "
+                     + "it into one of those folders.")
+                    .font(.caption2).foregroundStyle(.secondary)
+            }
+        }.formStyle(.grouped).scrollContentBackground(.hidden)
+    }
+
+    /// High-contrast warning: filled amber card, not thin orange text on frost.
+    private func calloutMissing(_ provider: LLMProvider) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("The \(provider.rawValue) CLI isn't installed")
+                    .font(.callout).fontWeight(.semibold)
+                Text("AI explanations will be skipped. Install it below, or pick a provider "
+                     + "that's already installed.")
+                    .font(.caption).foregroundStyle(.secondary)
+                Link("Set up \(provider.rawValue) →", destination: provider.setupURL)
+                    .font(.caption).fontWeight(.medium)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(10)
+        .background(Color.orange.opacity(0.14),
+                    in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous)
+            .strokeBorder(Color.orange.opacity(0.35)))
+    }
+
+    private func providerSetupRow(_ provider: LLMProvider, installed: Bool) -> some View {
+        HStack(alignment: .top) {
+            Image(systemName: installed ? "checkmark.circle.fill" : "arrow.down.circle")
+                .foregroundStyle(installed ? .green : .secondary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(provider.displayName).font(.callout)
+                if installed {
+                    Text("Installed and ready").font(.caption2).foregroundStyle(.green)
+                } else {
+                    Text(provider.installHint)
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundStyle(.secondary).textSelection(.enabled)
                 }
             }
-            if state.settings.llmEnabled && detected[state.settings.llmProvider] == nil {
-                Text("The \(state.settings.llmProvider.rawValue) CLI was not found — "
-                     + "AI explanations will be skipped. Install it or pick another provider.")
-                    .font(.caption).foregroundStyle(.orange)
-            }
-            Stepper("Ask about folders over: \(state.settings.llmMinSizeMB) MB",
-                    value: Binding(get: { state.settings.llmMinSizeMB },
-                                   set: { state.settings.llmMinSizeMB = $0 }),
-                    in: 100...5000, step: 100)
-            Text("Uses your existing subscription via the local CLI. "
-                 + "No API keys, no data sent by Cleanium itself.")
-                .font(.caption).foregroundStyle(.secondary)
-        }.formStyle(.grouped).scrollContentBackground(.hidden)
+            Spacer()
+            Link("Guide", destination: provider.setupURL).font(.caption)
+        }
     }
 }

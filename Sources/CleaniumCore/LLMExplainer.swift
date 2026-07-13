@@ -11,6 +11,24 @@ public enum LLMProvider: String, Codable, CaseIterable, Sendable {
         }
     }
 
+    /// The CLI's official install/setup page, linked from Settings → AI.
+    public var setupURL: URL {
+        switch self {
+        case .claude: return URL(string: "https://github.com/anthropics/claude-code")!
+        case .codex: return URL(string: "https://github.com/openai/codex")!
+        case .gemini: return URL(string: "https://github.com/google-gemini/gemini-cli")!
+        }
+    }
+
+    /// One-line install hint shown next to the setup link.
+    public var installHint: String {
+        switch self {
+        case .claude: return "curl -fsSL https://claude.ai/install.sh | bash — needs Claude Pro or Max"
+        case .codex: return "npm install -g @openai/codex — needs ChatGPT Plus or Pro"
+        case .gemini: return "npm install -g @google/gemini-cli"
+        }
+    }
+
     /// Folder names are untrusted input embedded in the prompt, and these CLIs are
     /// agentic — invoke each with tool use locked down so injected text in a path
     /// cannot trigger actions. Gemini's non-interactive default already requires

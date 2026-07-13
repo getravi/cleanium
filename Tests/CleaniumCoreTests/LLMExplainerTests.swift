@@ -134,6 +134,14 @@ final class LLMExplainerTests: XCTestCase {
         XCTAssertTrue(dead, "stubborn child (pid \(pid)) survived the timeout kill path")
     }
 
+    func testEveryProviderHasASetupURL() {
+        for provider in LLMProvider.allCases {
+            let url = provider.setupURL
+            XCTAssertEqual(url.scheme, "https", "\(provider) setup URL must be https")
+            XCTAssertFalse(url.host?.isEmpty ?? true, "\(provider) setup URL needs a host")
+        }
+    }
+
     func testProviderArgumentsRestrictTools() {
         // Folder names are untrusted input embedded in the prompt; the CLIs are
         // agentic, so every provider must be invoked with tool use locked down.
