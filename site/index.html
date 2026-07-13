@@ -40,6 +40,13 @@
           padding-block: 96px 88px; }
   .hero-copy .icon { width: 72px; height: 72px; margin-bottom: 24px;
                      filter: drop-shadow(0 8px 20px rgba(34,160,107,.4)); }
+  .brand { display: flex; align-items: center; gap: 14px; margin-bottom: 26px; }
+  .brand .icon { width: 56px; height: 56px; margin: 0;
+                 filter: drop-shadow(0 8px 20px rgba(34,160,107,.4)); }
+  .wordmark { font-size: 30px; font-weight: 700; letter-spacing: -.02em; }
+  .wordmark em { font-style: normal; background: var(--grad);
+                 -webkit-background-clip: text; background-clip: text;
+                 -webkit-text-fill-color: transparent; }
   h1 { font-size: clamp(38px, 5vw, 52px); line-height: 1.06; letter-spacing: -.028em;
        font-weight: 700; margin-bottom: 18px; }
   h1 em { font-style: normal; background: var(--grad);
@@ -147,7 +154,10 @@
 
 <header class="wrap hero">
   <div class="hero-copy">
-    <img class="icon" src="icon.png" alt="" width="72" height="72">
+    <div class="brand">
+      <img class="icon" src="icon.png" alt="" width="56" height="56">
+      <span class="wordmark">Sweep<em>Wise</em></span>
+    </div>
     <h1>Know what it is<br>before you <em>delete it</em>.</h1>
     <p class="lede">Sweepwise lives in your Mac's menu bar and finds the gigabytes hiding in
       caches, build folders, and AI model stores — then explains each one in plain English:
