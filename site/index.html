@@ -256,14 +256,18 @@
 
 <section class="wrap">
   <p class="eyebrow">Install</p>
-  <h2>Thirty seconds, no installer</h2>
+  <h2>One line, or one drag</h2>
   <div class="install">
     <div>
-      <p>Unzip, drag <b>Sweepwise.app</b> to Applications, then <kbd>right-click</kbd> →
-         <kbd>Open</kbd> the first time. Sweepwise is ad-hoc signed, not notarized, so macOS
-         asks for that one explicit approval.</p>
-      <p style="margin-top:14px">It then lives in your menu bar — no Dock icon, no windows
-         until you ask.</p>
+      <p>Paste this in Terminal. It grabs the latest release, moves Sweepwise to
+         Applications, and offers to open it at login:</p>
+      <div class="term" style="margin:12px 0 18px">
+        <b>curl</b> -fsSL https://raw.githubusercontent.com/sweepwise/sweepwise/main/scripts/install.sh <span class="c">|</span> <b>bash</b>
+      </div>
+      <p>Prefer to do it by hand? <a href="https://github.com/sweepwise/sweepwise/releases/latest/download/Sweepwise.zip">Download the zip</a>,
+         unzip, drag <b>Sweepwise.app</b> to Applications, then <kbd>right-click</kbd> →
+         <kbd>Open</kbd> the first time (ad-hoc signed, not notarized — that's the one approval).
+         Either way it lives in your menu bar: no Dock icon, no windows until you ask.</p>
     </div>
     <div class="term">
       <span class="c"># prefer building it yourself?</span><br>

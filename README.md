@@ -22,7 +22,17 @@ Sweepwise scans a configurable set of folders (caches, dev artifacts, downloads,
 - macOS 14+
 - Swift 5.9+ (Xcode Command Line Tools are enough — no Xcode project required)
 
-## Install / Build
+## Install
+
+One line — downloads the latest release, moves it to `/Applications`, and offers to open it at login:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sweepwise/sweepwise/main/scripts/install.sh | bash
+```
+
+Or [download the zip](https://github.com/sweepwise/sweepwise/releases/latest/download/Sweepwise.zip), unzip, drag `Sweepwise.app` to Applications, and **right-click → Open** the first time (ad-hoc signed, not notarized).
+
+## Build from source
 
 ```bash
 swift test          # run the test suite
@@ -30,7 +40,7 @@ swift test          # run the test suite
 open dist/Sweepwise.app
 ```
 
-`bundle.sh` runs `swift build -c release`, assembles `dist/Sweepwise.app`, and ad-hoc code-signs it so it runs locally without Gatekeeper prompts.
+`bundle.sh` runs `swift build -c release` (universal binary), assembles `dist/Sweepwise.app`, and ad-hoc code-signs it so it runs locally without Gatekeeper prompts.
 
 ## Usage
 
