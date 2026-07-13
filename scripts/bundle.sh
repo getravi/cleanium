@@ -31,11 +31,22 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <key>CFBundleName</key><string>Cleanium</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleShortVersionString</key><string>0.1.2</string>
+    <key>CFBundleVersion</key><string>0.1.2</string>
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>LSUIElement</key><true/>
 </dict>
 </plist>
 PLIST
 
-codesign --force --sign - "$APP"
-echo "Built $APP"
+# Signing:
+#   default            -> ad-hoc signature (local use; needs right-click→Open once)
+#   CLEANIUM_SIGN_IDENTITY set to a "Developer ID Application: … (TEAMID)" identity
+#                      -> hardened-runtime signature required for notarization
+if [[ -n "${CLEANIUM_SIGN_IDENTITY:-}" ]]; then
+  codesign --force --options runtime --timestamp \
+    --sign "$CLEANIUM_SIGN_IDENTITY" "$APP"
+  echo "Built $APP (signed: $CLEANIUM_SIGN_IDENTITY)"
+else
+  codesign --force --sign - "$APP"
+  echo "Built $APP (ad-hoc signed)"
+fi
