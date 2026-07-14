@@ -160,8 +160,8 @@
     </div>
     <h1>Know what it is<br>before you <em>delete it</em>.</h1>
     <p class="lede">Sweepwise lives in your Mac's menu bar and finds the gigabytes hiding in
-      caches, build folders, and AI model stores — then explains each one in plain English:
-      what it is, how risky it is, and how to get it back.</p>
+      app caches, old downloads, and forgotten leftovers — then explains each one in plain
+      English: what it is, how risky it is, and how to get it back. No jargon, nothing to learn.</p>
     <a class="cta" href="https://github.com/sweepwise/sweepwise/releases/latest/download/Sweepwise.zip">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5"/><path d="M4 19h16"/></svg>
       Download for Mac
@@ -177,24 +177,24 @@
       <div class="pop-head"><b>Sweepwise</b><span>scanning… 4 found</span></div>
       <div class="prow">
         <span class="rbadge" style="background:#4ade80">A</span>
-        <div><div class="name">Homebrew downloads</div>
-          <div class="path">~/Library/Caches/Homebrew</div>
-          <div class="why">Old installer downloads. Safe to clear — fetched again when needed.</div></div>
+        <div><div class="name">App caches</div>
+          <div class="path">~/Library/Caches</div>
+          <div class="why">Scratch files your apps rebuild on their own. Safe to clear.</div></div>
         <div><div class="size">6.8 GB</div><span class="back">↩ nothing to do</span></div>
+      </div>
+      <div class="prow">
+        <span class="rbadge" style="background:#60a5fa">C</span>
+        <div><div class="name">Old installers</div>
+          <div class="path">~/Downloads</div>
+          <div class="why">Leftover .dmg files for apps you already installed.</div></div>
+        <div><div class="size">4.2 GB</div><span class="back">↩ re-download</span></div>
       </div>
       <div class="prow">
         <span class="rbadge" style="background:#2dd4bf">B</span>
         <div><div class="name">node_modules</div>
           <div class="path">~/Documents/Dev/webapp/node_modules</div>
-          <div class="why">Building blocks the project downloads for itself.</div></div>
-        <div><div class="size">4.2 GB</div><span class="back">↩ pnpm install</span></div>
-      </div>
-      <div class="prow">
-        <span class="rbadge" style="background:#2dd4bf">B</span>
-        <div><div class="name">DerivedData</div>
-          <div class="path">~/Library/Developer/Xcode/DerivedData</div>
-          <div class="why">Xcode's temporary build files. Remade automatically.</div></div>
-        <div><div class="size">11.3 GB</div><span class="back">↩ next build</span></div>
+          <div class="why">Building blocks a coding project downloads for itself.</div></div>
+        <div><div class="size">11.3 GB</div><span class="back">↩ pnpm install</span></div>
       </div>
       <div class="prow">
         <span class="rbadge" style="background:#60a5fa">C</span>
@@ -230,7 +230,7 @@
 
 <section class="wrap">
   <p class="eyebrow">Why Sweepwise</p>
-  <h2>Built for the disks developers actually have</h2>
+  <h2>Made for everyone, sharp enough for power users</h2>
   <div class="feat">
     <div><h3>Explains, never guesses for you</h3>
       <p>Other cleaners show a number and a checkbox. Sweepwise tells you what each folder is
@@ -242,9 +242,10 @@
     <div><h3>Learns only with consent</h3>
       <p>When you delete something the AI classified, Sweepwise offers to remember the rule.
          Nothing is saved without your approval — <b>you're asked every time</b>.</p></div>
-    <div><h3>Knows developer clutter</h3>
-      <p>node_modules, DerivedData, cargo and gradle caches, simulator images, Ollama and
-         Hugging Face models — the multi-gigabyte stuff generic cleaners walk past.</p></div>
+    <div><h3>Knows where space hides</h3>
+      <p>App caches, stale downloads, and old installers for everyone — plus the deep stuff
+         power users pile up (node_modules, Xcode data, AI model stores) that generic cleaners
+         walk past.</p></div>
     <div><h3>Open source, zero dependencies</h3>
       <p>Pure Swift and SwiftUI, no third-party packages, MIT licensed. <b>Read every line</b>
          before you trust it with your disk.</p></div>
