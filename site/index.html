@@ -11,7 +11,24 @@
 <meta property="og:title" content="Sweepwise — see what's safe to delete, and why">
 <meta property="og:description" content="A macOS menu-bar disk cleaner that explains every candidate in plain English: what it is, how risky it is, and how to get it back.">
 <meta property="og:image" content="https://sweepwise.app/icon.png">
+<meta name="twitter:card" content="summary">
 <link rel="icon" type="image/png" href="icon.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Sweepwise",
+  "url": "https://sweepwise.app/",
+  "image": "https://sweepwise.app/icon.png",
+  "description": "A macOS menu-bar disk cleaner that explains every candidate in plain English: what it is, how risky it is, and how to get it back.",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "macOS 14+",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "license": "https://opensource.org/license/mit",
+  "downloadUrl": "https://sweepwise.app/download",
+  "softwareVersion": "0.1.3"
+}
+</script>
 <style>
   :root {
     --bg: #0a100e;
@@ -20,7 +37,7 @@
     --line-strong: rgba(123, 224, 172, .22);
     --text: #edf6f1;
     --muted: #8fa69c;
-    --faint: #5f746c;
+    --faint: #6f857b;
     --mint: #7be0ac;
     --teal: #1e8f66;
     --grad: linear-gradient(135deg, #0a5c54, #21a078 55%, #73d9a6);
@@ -36,6 +53,9 @@
     overflow-x: clip;
   }
   a { color: var(--mint); text-decoration: none; }
+  /* In-text links must not rely on color alone (WCAG 1.4.1). */
+  p a, footer a { text-decoration: underline; text-underline-offset: 3px;
+                  text-decoration-color: var(--line-strong); }
   a:focus-visible, .cta:focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; border-radius: 4px; }
   .wrap { max-width: 1040px; margin: 0 auto; padding-inline: 28px; }
   .eyebrow { font: 600 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase;
@@ -199,7 +219,7 @@
 <header class="wrap hero">
   <div class="hero-copy">
     <div class="brand">
-      <img class="icon" src="icon.png" alt="" width="144" height="144">
+      <img class="icon" src="icon-288.png" alt="" width="144" height="144" fetchpriority="high">
       <span class="wordmark">Sweep<em>Wise</em></span>
     </div>
     <h1>Know what it is<br>before you <em>delete it</em>.</h1>
@@ -252,6 +272,7 @@
   </div>
 </header>
 
+<main>
 <section class="trust">
   <div class="wrap">
     <div class="tcell reveal">
@@ -361,6 +382,7 @@
     </div>
   </div>
 </section>
+</main>
 
 <footer class="wrap">
   <span>© 2026 Ravi Prakash · MIT</span>

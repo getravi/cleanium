@@ -1,0 +1,14 @@
+# Sweepwise
+
+> Sweepwise is a free, open-source (MIT) macOS menu-bar disk cleaner that explains every cleanup candidate in plain English: what it is, how risky deleting it is, and how to get it back. Deletion goes to the Trash by default. Requires macOS 14+; universal binary (Apple Silicon and Intel).
+
+Key facts:
+- Rule-based classification of caches, dev artifacts (node_modules, Xcode DerivedData), AI model stores, app leftovers, and stale downloads, each with a risk grade from A (safe) to D (user data).
+- Optional AI explanations for unknown large folders via a locally installed claude, codex, or gemini CLI. No API keys; the app itself never touches the network.
+- Install: `curl -fsSL https://sweepwise.app/install.sh | bash`
+
+## Links
+
+- [Download latest release](https://sweepwise.app/download)
+- [Source code on GitHub](https://github.com/sweepwise/sweepwise)
+- [Report an issue](https://github.com/sweepwise/sweepwise/issues)
