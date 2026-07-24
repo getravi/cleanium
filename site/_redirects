@@ -1,0 +1,4 @@
+# Cloudflare Pages redirects. https://developers.cloudflare.com/pages/configuration/redirects/
+# Branded short URLs; 302 so a future move (e.g. notarized assets) takes effect immediately.
+/install.sh https://raw.githubusercontent.com/sweepwise/sweepwise/main/scripts/install.sh 302
+/download https://github.com/sweepwise/sweepwise/releases/latest/download/Sweepwise.zip 302

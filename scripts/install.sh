@@ -2,7 +2,7 @@
 # Sweepwise installer. Downloads the latest release, installs it to
 # /Applications, and offers to open it at login.
 #
-#   curl -fsSL https://raw.githubusercontent.com/sweepwise/sweepwise/main/scripts/install.sh | bash
+#   curl -fsSL https://sweepwise.app/install.sh | bash
 #
 set -euo pipefail
 

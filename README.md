@@ -2,6 +2,8 @@
 
 A native macOS menu-bar app that finds disk-cleanup candidates and tells you why each one is safe (or risky) to delete before you touch anything.
 
+**Website: [sweepwise.app](https://sweepwise.app)**
+
 ![platform](https://img.shields.io/badge/platform-macOS%2014%2B-blue)
 ![swift](https://img.shields.io/badge/swift-5.9%2B-orange)
 ![license](https://img.shields.io/badge/license-MIT-green)
@@ -27,10 +29,10 @@ Sweepwise scans a configurable set of folders (caches, dev artifacts, downloads,
 One line — downloads the latest release, moves it to `/Applications`, and offers to open it at login:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sweepwise/sweepwise/main/scripts/install.sh | bash
+curl -fsSL https://sweepwise.app/install.sh | bash
 ```
 
-Or [download the zip](https://github.com/sweepwise/sweepwise/releases/latest/download/Sweepwise.zip), unzip, drag `Sweepwise.app` to Applications, and **right-click → Open** the first time (ad-hoc signed, not notarized).
+Or [download the zip](https://sweepwise.app/download), unzip, drag `Sweepwise.app` to Applications, and **right-click → Open** the first time (ad-hoc signed, not notarized).
 
 ## Build from source
 
