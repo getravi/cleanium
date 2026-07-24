@@ -32,7 +32,7 @@ One line — downloads the latest release, moves it to `/Applications`, and offe
 curl -fsSL https://sweepwise.app/install.sh | bash
 ```
 
-Or [download the zip](https://sweepwise.app/download), unzip, drag `Sweepwise.app` to Applications, and **right-click → Open** the first time (ad-hoc signed, not notarized).
+Or [download the zip](https://sweepwise.app/download), unzip, and drag `Sweepwise.app` to Applications. The build is not yet notarized, so macOS blocks the first launch of a browser-downloaded copy: open it once and click **Done** (not "Move to Trash"), then go to **System Settings → Privacy & Security**, scroll down, and click **Open Anyway**. The one-line installer above avoids this entirely.
 
 ## Build from source
 
